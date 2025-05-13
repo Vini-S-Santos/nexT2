@@ -4,6 +4,7 @@ import Wallet from './pages/User/Wallet';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import Register from './pages/Register';
+import Statement from './pages/User/Statement';
 
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/statement" element={<Statement />} />
         <Route path="/admin/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
         <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
       </Routes>

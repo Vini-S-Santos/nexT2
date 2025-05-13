@@ -8,7 +8,7 @@ export default function Register() {
     email: '',
     cpf: '',
     password: '',
-    role: 'admin',
+    role: 'user',
   });
 
   const navigate = useNavigate();
