@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/api';
+import Header from '../../components/Header';
 
 export default function Statement({ isAdmin = false }) {
   const [transactions, setTransactions] = useState([]);
@@ -7,11 +9,28 @@ export default function Statement({ isAdmin = false }) {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [cpf, setCpf] = useState('');
+  const [cpfError, setCpfError] = useState('');
   const [product, setProduct] = useState('');
   const [min, setMin] = useState('');
   const [max, setMax] = useState('');
+  const navigate = useNavigate();
+
+  const handleCpfChange = (e) => {
+    const value = e.target.value;
+    const onlyNumbers = value.replace(/\D/g, '');
+
+    if (value !== onlyNumbers) {
+      setCpfError('O CPF deve conter apenas números');
+    } else {
+      setCpfError('');
+    }
+
+    setCpf(onlyNumbers);
+  };
 
   const fetchTransactions = async () => {
+    if (cpfError) return;
+
     const params = {};
     if (status) params.status = status;
     if (from && to) {
@@ -42,18 +61,23 @@ export default function Statement({ isAdmin = false }) {
   }, []);
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold mb-2">Extrato de Transações</h2>
+    <div className="p-4 relative min-h-screen bg-gray-100">
+      <Header />
+
+      <h2 className="text-xl font-semibold mb-4">Extrato de Transações</h2>
 
       <div className="flex gap-2 mb-4 flex-wrap">
         {isAdmin && (
-          <input
-            className="border p-2"
-            type="text"
-            placeholder="CPF"
-            value={cpf}
-            onChange={(e) => setCpf(e.target.value)}
-          />
+          <div className="flex flex-col">
+            <input
+              className="border p-2"
+              type="text"
+              placeholder="CPF (somente números)"
+              value={cpf}
+              onChange={handleCpfChange}
+            />
+            {cpfError && <span className="text-red-500 text-sm">{cpfError}</span>}
+          </div>
         )}
         {isAdmin && (
           <input
@@ -86,7 +110,6 @@ export default function Statement({ isAdmin = false }) {
           value={to}
           onChange={(e) => setTo(e.target.value)}
         />
-
         {isAdmin && (
           <>
             <input
@@ -107,7 +130,6 @@ export default function Statement({ isAdmin = false }) {
             />
           </>
         )}
-
         <button
           onClick={fetchTransactions}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -116,7 +138,7 @@ export default function Statement({ isAdmin = false }) {
         </button>
       </div>
 
-      <table className="w-full border-collapse border">
+      <table className="w-full border-collapse border bg-white shadow">
         <thead>
           <tr>
             <th className="border px-2 py-1">Descrição</th>
@@ -138,6 +160,24 @@ export default function Statement({ isAdmin = false }) {
           ))}
         </tbody>
       </table>
+
+      <button
+        onClick={() => navigate('/wallet')}
+        className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 shadow-md"
+      >
+        Ver Saldo
+      </button>
+
+      {isAdmin && (
+        <div className="fixed bottom-4 left-4 flex flex-col gap-2">
+          <button
+            onClick={() => navigate('/admin/upload')}
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 shadow-md"
+          >
+            Upload de Planilha
+          </button>
+        </div>
+      )}
     </div>
   );
 }

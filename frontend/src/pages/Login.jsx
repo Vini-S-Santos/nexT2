@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import api from '../api/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Login() {
@@ -50,6 +50,13 @@ export default function Login() {
         >
           Entrar
         </button>
+
+        <p className="text-center mt-4 text-sm text-gray-600">
+          Não tem uma conta?{' '}
+          <Link to="/register" className="text-blue-600 hover:underline">
+            Clique aqui para registrar
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/api'
+import api from '../api/api';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -11,23 +11,45 @@ export default function Register() {
     role: 'user',
   });
 
-  const navigate = useNavigate();
   const [error, setError] = useState('');
+  const [cpfError, setCpfError] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    const { name, value } = e.target;
+
+    if (name === 'cpf') {
+      const onlyNumbers = value.replace(/\D/g, '');
+      if (value !== onlyNumbers) {
+        setCpfError('O CPF deve conter apenas números');
+      } else {
+        setCpfError('');
+      }
+
+      setFormData(prev => ({ ...prev, [name]: onlyNumbers }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    if (cpfError) return;
+  
     try {
       await api.post('/users/register', formData);
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao registrar usuário');
+      const message = err.response?.data?.message || 'Erro ao registrar usuário';
+  
+      if (message.includes('cpf')) {
+        setCpfError('CPF já cadastrado.');
+      } else if (message.includes('email')) {
+        setError('E-mail já cadastrado.');
+      } else {
+        setError(message);
+      }
     }
   };
 
@@ -60,11 +82,13 @@ export default function Register() {
           className="border p-2 w-full mb-2"
           type="text"
           name="cpf"
-          placeholder="CPF"
+          placeholder="CPF (apenas números)"
           value={formData.cpf}
           onChange={handleChange}
           required
         />
+        {cpfError && <p className="text-red-500 text-sm mb-2">{cpfError}</p>}
+
         <input
           className="border p-2 w-full mb-2"
           type="password"
@@ -75,8 +99,29 @@ export default function Register() {
           required
         />
 
-        <button type="submit" className="bg-blue-500 text-white w-full py-2 mt-2 rounded hover:bg-blue-600">
+        <select
+          className="border p-2 w-full mb-4"
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+        >
+          <option value="user">Usuário</option>
+          <option value="admin">Administrador</option>
+        </select>
+
+        <button
+          type="submit"
+          className="bg-blue-500 text-white w-full py-2 mt-2 rounded hover:bg-blue-600"
+        >
           Registrar
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate('/login')}
+          className="mt-3 w-full text-blue-600 hover:underline text-sm"
+        >
+          Já tem uma conta? Voltar para o Login
         </button>
       </form>
     </div>

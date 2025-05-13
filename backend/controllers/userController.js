@@ -1,23 +1,35 @@
-const bcrypt = require('bcryptjs');
 const { User } = require('../models');
+const bcrypt = require('bcryptjs');
 
-exports.create = async (req, res) => {
-  const { name, email, cpf, password, role } = req.body;
+module.exports = {
+  register: async (req, res) => {
+    const { name, email, cpf, password, role } = req.body;
 
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    try {
+      const existingEmail = await User.findOne({ where: { email } });
+      if (existingEmail) {
+        return res.status(400).json({ message: 'E-mail já cadastrado.' });
+      }
 
-    const user = await User.create({
-      name,
-      email,
-      cpf,
-      password: hashedPassword,
-      role: role || 'user',
-    });
+      const existingCpf = await User.findOne({ where: { cpf } });
+      if (existingCpf) {
+        return res.status(400).json({ message: 'CPF já cadastrado.' });
+      }
 
-    res.status(201).json({ id: user.id, email: user.email, role: user.role });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erro ao registrar usuário' });
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      await User.create({
+        name,
+        email,
+        cpf,
+        password: hashedPassword,
+        role
+      });
+
+      res.status(201).json({ message: 'Usuário registrado com sucesso.' });
+    } catch (err) {
+      console.error('Erro no registro:', err);
+      res.status(500).json({ message: 'Erro interno no servidor.' });
+    }
   }
 };
