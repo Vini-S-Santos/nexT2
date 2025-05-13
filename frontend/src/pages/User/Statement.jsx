@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../api/api';
 
-export default function Statement() {
+export default function Statement({ isAdmin = false }) {
   const [transactions, setTransactions] = useState([]);
   const [status, setStatus] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [product, setProduct] = useState('');
+  const [min, setMin] = useState('');
+  const [max, setMax] = useState('');
 
   const fetchTransactions = async () => {
     const params = {};
@@ -14,29 +18,56 @@ export default function Statement() {
       params.from = from;
       params.to = to;
     }
-  
+    if (isAdmin) {
+      if (cpf) params.cpf = cpf;
+      if (product) params.product = product;
+      if (min) params.min = min;
+      if (max) params.max = max;
+    }
+
     try {
-      const res = await api.get('/transactions/user', {
+      const url = isAdmin ? '/transactions/report' : '/transactions/user';
+      const res = await api.get(url, {
         headers: { Authorization: localStorage.getItem('token') },
         params,
       });
       setTransactions(res.data);
     } catch (err) {
-      console.error("Erro ao buscar transações:", err);
+      console.error('Erro ao buscar transações:', err);
     }
   };
 
-  useEffect(() => { fetchTransactions(); }, []);
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">Extrato de Transações</h2>
+    <div className="p-4">
+      <h2 className="text-xl font-semibold mb-2">Extrato de Transações</h2>
 
-      <div className="flex flex-wrap gap-4 mb-6">
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {isAdmin && (
+          <input
+            className="border p-2"
+            type="text"
+            placeholder="CPF"
+            value={cpf}
+            onChange={(e) => setCpf(e.target.value)}
+          />
+        )}
+        {isAdmin && (
+          <input
+            className="border p-2"
+            type="text"
+            placeholder="Produto"
+            value={product}
+            onChange={(e) => setProduct(e.target.value)}
+          />
+        )}
         <select
+          className="border p-2"
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="border p-2 rounded w-48"
         >
           <option value="">Todos os Status</option>
           <option value="Aprovado">Aprovado</option>
@@ -44,58 +75,69 @@ export default function Statement() {
           <option value="Em avaliação">Em avaliação</option>
         </select>
         <input
+          className="border p-2"
           type="date"
           value={from}
           onChange={(e) => setFrom(e.target.value)}
-          className="border p-2 rounded"
         />
         <input
+          className="border p-2"
           type="date"
           value={to}
           onChange={(e) => setTo(e.target.value)}
-          className="border p-2 rounded"
         />
+
+        {isAdmin && (
+          <>
+            <input
+              className="border p-2"
+              type="number"
+              step="0.01"
+              placeholder="Valor mínimo"
+              value={min}
+              onChange={(e) => setMin(e.target.value)}
+            />
+            <input
+              className="border p-2"
+              type="number"
+              step="0.01"
+              placeholder="Valor máximo"
+              value={max}
+              onChange={(e) => setMax(e.target.value)}
+            />
+          </>
+        )}
+
         <button
           onClick={fetchTransactions}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
           Filtrar
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse shadow-sm">
-          <thead className="bg-gray-200 text-gray-700">
-            <tr>
-              <th className="p-3 text-left">Descrição</th>
-              <th className="p-3 text-left">Data</th>
-              <th className="p-3 text-left">Pontos</th>
-              <th className="p-3 text-left">Valor</th>
-              <th className="p-3 text-left">Status</th>
+      <table className="w-full border-collapse border">
+        <thead>
+          <tr>
+            <th className="border px-2 py-1">Descrição</th>
+            <th className="border px-2 py-1">Data</th>
+            <th className="border px-2 py-1">Pontos</th>
+            <th className="border px-2 py-1">Valor</th>
+            <th className="border px-2 py-1">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((t) => (
+            <tr key={t.id}>
+              <td className="border px-2 py-1">{t.description}</td>
+              <td className="border px-2 py-1">{new Date(t.transactionDate).toLocaleDateString()}</td>
+              <td className="border px-2 py-1">{t.points}</td>
+              <td className="border px-2 py-1">R$ {t.value.toFixed(2)}</td>
+              <td className="border px-2 py-1">{t.status}</td>
             </tr>
-          </thead>
-          <tbody>
-            {transactions.map((t) => (
-              <tr key={t.id} className="border-b hover:bg-gray-50">
-                <td className="p-3">{t.description}</td>
-                <td className="p-3">{new Date(t.transactionDate).toLocaleDateString()}</td>
-                <td className="p-3">{t.points}</td>
-                <td className="p-3">R$ {t.value.toFixed(2)}</td>
-                <td className={`p-3 font-medium ${t.status === 'Aprovado' ? 'text-green-600' : t.status === 'Reprovado' ? 'text-red-500' : 'text-yellow-600'}`}>
-                  {t.status}
-                </td>
-              </tr>
-            ))}
-            {transactions.length === 0 && (
-              <tr>
-                <td colSpan="5" className="text-center py-4 text-gray-500">
-                  Nenhuma transação encontrada.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

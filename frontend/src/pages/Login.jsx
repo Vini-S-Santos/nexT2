@@ -1,70 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import api from '../api/api';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
+  const { setRole } = useContext(AuthContext);
 
   const login = async () => {
-    setLoading(true);
-    setError('');
     try {
       const res = await api.post('/auth/login', { email, password });
-  
-      if (res.data?.token) {
-        localStorage.setItem('token', res.data.token);
-  
-        if (res.data.user?.role === 'admin') {
-          navigate('/admin/upload');
-        } else {
-          navigate('/wallet');
-        }
-      } else {
-        setError('Token ausente na resposta do servidor.');
-      }
+      const token = res.data.token;
+      localStorage.setItem('token', token);
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      setRole(payload.role);
+      navigate('/statement');
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || 'Erro ao fazer login');
-    } finally {
-      setLoading(false);
+      console.error('Erro ao fazer login', err);
+      alert('Credenciais inválidas');
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-semibold mb-4">Login</h2>
-
-        {error && <p className="text-red-500 mb-3">{error}</p>}
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
         <input
-          type="email"
-          placeholder="E-mail"
-          className="w-full border px-3 py-2 rounded mb-2"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
+          placeholder="Email"
+          type="email"
+          className="w-full px-4 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+
         <input
           type="password"
-          placeholder="Senha"
-          className="w-full border px-3 py-2 rounded mb-4"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
+          placeholder="Senha"
+          className="w-full px-4 py-2 mb-6 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
         <button
           onClick={login}
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:opacity-50"
-          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
         >
-          {loading ? 'Entrando...' : 'Entrar'}
+          Entrar
         </button>
       </div>
     </div>

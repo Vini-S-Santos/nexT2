@@ -11,7 +11,6 @@ module.exports = {
 
     for (let row of data) {
       console.log("Linha:", row);
-
       const user = await User.findOne({ where: { cpf: row.CPF } });
       if (user) {
         console.log("Usuário encontrado:", user.id);
@@ -19,9 +18,7 @@ module.exports = {
           UserId: user.id,
           description: row["Descrição da transação"],
           transactionDate: new Date(row["Data da transação"]),
-          points: parseInt(
-            row["Valor em pontos"].replace(/\./g, "").replace(",", "")
-          ),
+          points: parseInt(row["Valor em pontos"].replace(/\./g, "").replace(",", "")),
           value: parseFloat(row["Valor"].replace(".", "").replace(",", ".")),
           status: row["Status"],
         });
@@ -34,50 +31,25 @@ module.exports = {
     res.status(201).json({ message: "Planilha processada com sucesso" });
   },
 
-  list: async (req, res) => {
-    try {
-      const where = {};
-      const { cpf, status, product, from, to, min, max } = req.query;
-
-      if (status) where.status = status;
-      if (from && to) {
-        where.transactionDate = {
-          [Op.gte]: new Date(from + 'T00:00:00'),
-          [Op.lte]: new Date(to + 'T23:59:59'),
-        };
-      }
-      if (min && max) where.value = { [Op.between]: [min, max] };
-      if (product) where.description = { [Op.like]: `%${product}%` };
-      if (cpf) {
-        const user = await User.findOne({ where: { cpf } });
-        if (user) where.UserId = user.id;
-      }
-
-      const data = await Transaction.findAll({ where });
-      res.json(data);
-    } catch (err) {
-      console.error("Erro ao listar transações:", err);
-      res.status(500).json({ message: "Erro ao listar transações" });
-    }
-  },
-
   userTransactions: async (req, res) => {
     try {
-      const where = { UserId: req.userId };
       const { status, from, to } = req.query;
+      const where = { UserId: req.userId };
 
       if (status) where.status = status;
       if (from && to) {
         where.transactionDate = {
-          [Op.gte]: new Date(from + 'T00:00:00'),
-          [Op.lte]: new Date(to + 'T23:59:59'),
+          [Op.between]: [
+            new Date(`${from}T00:00:00`),
+            new Date(`${to}T23:59:59`)
+          ],
         };
       }
 
       const data = await Transaction.findAll({ where });
       res.json(data);
     } catch (err) {
-      console.error("Erro ao buscar transações do usuário:", err);
+      console.error("Erro ao buscar extrato:", err);
       res.status(500).json({ message: "Erro ao buscar transações" });
     }
   },
@@ -87,10 +59,56 @@ module.exports = {
       const total = await Transaction.sum("points", {
         where: { UserId: req.userId, status: "Aprovado" },
       });
+
       res.json({ balance: total || 0 });
     } catch (err) {
       console.error("Erro na carteira:", err);
       res.status(500).json({ message: "Erro ao buscar a carteira" });
+    }
+  },
+
+  list: async (req, res) => {
+    try {
+      const { cpf, status, product, from, to, min, max } = req.query;
+      const where = {};
+
+      if (status) where.status = status;
+
+      if (from && to) {
+        where.transactionDate = {
+          [Op.between]: [
+            new Date(`${from}T00:00:00`),
+            new Date(`${to}T23:59:59`)
+          ],
+        };
+      }
+
+      if (min && max) {
+        where.value = {
+          [Op.between]: [parseFloat(min), parseFloat(max)],
+        };
+      }
+
+      if (product) {
+        where.description = {
+          [Op.like]: `%${product}%`,
+        };
+      }
+
+      if (cpf) {
+        const user = await User.findOne({ where: { cpf } });
+        if (user) {
+          where.UserId = user.id;
+        } else {
+          return res.json([]);
+        }
+      }
+
+      const data = await Transaction.findAll({ where });
+      res.json(data);
+    } catch (err) {
+      console.error("Erro ao buscar relatório:", err);
+      res.status(500).json({ message: "Erro ao buscar transações" });
     }
   },
 };
