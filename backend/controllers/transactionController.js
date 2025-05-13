@@ -49,9 +49,15 @@ module.exports = {
     res.json(data);
   },
   wallet: async (req, res) => {
-    const total = await Transaction.sum("points", {
-      where: { userId: req.userId, status: "Aprovado" },
-    });
-    res.json({ balance: total });
-  },
+    try {
+      const total = await Transaction.sum("points", {
+        where: { UserId: req.userId, status: "Aprovado" },
+      });
+  
+      res.json({ balance: total || 0 });
+    } catch (err) {
+      console.error('Erro na carteira:', err);
+      res.status(500).json({ message: "Erro ao buscar a carteira" });
+    }
+  }
 };
