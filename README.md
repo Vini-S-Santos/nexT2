@@ -1,87 +1,86 @@
-# 🚀 NexLab Full Stack Challenge
+# 📊 Sistema de Gestão de Transações
 
-Aplicação full stack desenvolvida como desafio técnico. O projeto é estruturado em monorepo e utiliza Docker para facilitar a execução de todos os serviços.
-
----
-
-
-## ⚙️ Tecnologias Utilizadas
-
-- **Frontend:** React + Vite
-- **Backend:** Node.js + Express + Sequelize
-- **Banco de Dados:** MySQL
-- **Ambiente:** Docker e Docker Compose
+Este é um sistema full-stack desenvolvido para gerenciar transações de usuários com base em arquivos `.xlsx`. Ele permite upload de transações, visualização de extrato por usuário, saldo de pontos e painel administrativo.
 
 ---
 
-## 📁 Variáveis de Ambiente
+## 🚀 Tecnologias Utilizadas
 
-Crie os arquivos `.env` nos diretórios `backend/` e `frontend/` com base nos exemplos abaixo:
+- **Frontend:** React.js, Vite, Axios
+- **Backend:** Node.js, Express, Sequelize, MySQL
+- **Banco de Dados:** MySQL 8.4 (em container)
+- **Containerização:** Docker e Docker Compose
 
-### backend/.env
+---
 
-```env
+## 🔧 Como rodar o projeto localmente
+
+### 1. Clonar o repositório
+```bash
+git clone git@github.com:Vini-S-Santos/nexT2.git
+cd <seu-repositorio>
+```
+
+### 2. Criar arquivos `.env`
+Crie um arquivo `.env` dentro da pasta `backend` com as seguintes variáveis:
+
+```
 DB_HOST=mysql
 DB_PORT=3306
 DB_USER=root
-DB_PASSWORD=suasenha
+DB_PASSWORD=123456
 DB_NAME=transacoes
 ```
 
-### frontend/.env
+> Altere os valores conforme necessário.
 
-```env
-VITE_API_URL=http://localhost:3001
-```
-
----
-
-## 🚀 Como Rodar Localmente com Docker
-
-### 1. Clone o repositório
-
-```bash
-git clone git@github.com:Vini-S-Santos/nexT2.git
-cd seu-repositorio
-```
-
-### 2. Crie os arquivos `.env`
-
-Siga os exemplos acima.
-
-### 3. Suba os containers
-
+### 3. Subir com Docker
 ```bash
 docker-compose up --build
 ```
 
-### 4. Acesse no navegador:
-
-- Frontend: [http://localhost:5173](http://localhost:5173)
-- Backend: [http://localhost:3001](http://localhost:3001)
+- Frontend: http://localhost:5173
+- Backend (API): http://localhost:3001
 
 ---
 
-## 🧪 Funcionalidades
+## 📤 Formato de Upload de Transações
 
-- [x] Autenticação de usuários
-- [x] Registro de transações
-- [x] Banco MySQL persistente via Docker volume
-- [x] Comunicação entre serviços Docker
+O arquivo de transações enviado deve ser no formato `.xlsx` com o seguinte padrão de colunas, lembrando que o cpf deve conter apenas numeros:
+
+```
+| CPF            | Descrição da transação | Data da transação | Valor em pontos | Valor     | Status       |
+|----------------|------------------------|-------------------|-----------------|-----------|--------------|
+| 28227930000 | Venda do produto X     | 10-10-2022        | 10,000          | 10.000,00 | Aprovado     |
+| 28227930000 | Venda do produto Y     | 10-10-2022        | 10,000          | 10.000,00 | Reprovado    |
+| 28227930000 | Venda do produto Z     | 10-10-2022        | 10,000          | 10.000,00 | Em avaliação |
+|                |                        |                   |                 |           |              |
+
+
+> Certifique-se de seguir exatamente esse padrão para garantir o processamento correto do arquivo.
 
 ---
 
-## 📌 Observações
+## 👤 Usuários
 
-- Lembre-se de **NÃO versionar o `.env`**.
-- Após usar, você pode parar os containers com:
+- Admins podem:
+  - Fazer upload de planilhas.
+  - Ver o painel geral de transações.
+
+- Usuários comuns podem:
+  - Ver seu próprio extrato e saldo de pontos aprovados.
+
+---
+
+## 🐳 Comandos úteis
 
 ```bash
-docker-compose down
+docker-compose down           # Derruba os containers
+docker-compose up --build     # Sobe novamente com rebuild
 ```
 
 ---
 
-## 🧑‍💻 Autor
+## 📝 Licença
 
-Desenvolvido por [Vinicius Souza](https://github.com/Vini-S-Santos).
+MIT © 2025
