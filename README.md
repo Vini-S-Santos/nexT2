@@ -51,9 +51,9 @@ O arquivo de transações enviado deve ser no formato `.xlsx` com o seguinte pad
 ```
 | CPF            | Descrição da transação | Data da transação | Valor em pontos | Valor     | Status       |
 |----------------|------------------------|-------------------|-----------------|-----------|--------------|
-| 28227930000 | Venda do produto X     | 10-10-2022        | 10,000          | 10.000,00 | Aprovado     |
-| 28227930000 | Venda do produto Y     | 10-10-2022        | 10,000          | 10.000,00 | Reprovado    |
-| 28227930000 | Venda do produto Z     | 10-10-2022        | 10,000          | 10.000,00 | Em avaliação |
+| 28227930000    | Venda do produto X     | 10-10-2022        | 10,000          | 10.000,00 | Aprovado     |
+| 28227930000    | Venda do produto Y     | 10-10-2022        | 10,000          | 10.000,00 | Reprovado    |
+| 28227930000    | Venda do produto Z     | 10-10-2022        | 10,000          | 10.000,00 | Em avaliação |
 |                |                        |                   |                 |           |              |
 
 
